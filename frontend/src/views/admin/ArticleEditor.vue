@@ -1,15 +1,15 @@
 <template>
   <div class="article-editor">
     <div class="editor-header">
-      <h1>{{ isEdit ? '编辑文章' : '新建文章' }}</h1>
+      <h1>{{ isEdit ? $t('article_editor.edit_article') : $t('article_editor.create_article') }}</h1>
       <div class="header-actions">
         <button class="secondary-btn" @click="saveDraft" :disabled="isLoading">
           <el-icon><DocumentCopy /></el-icon>
-          保存草稿
+          {{ $t('article_editor.save_draft') }}
         </button>
         <button class="tech-button" @click="publish" :disabled="isLoading">
           <el-icon><Promotion /></el-icon>
-          {{ isEdit ? '更新文章' : '发布文章' }}
+          {{ isEdit ? $t('article_editor.publish') : $t('article_editor.publish') }}
         </button>
       </div>
     </div>
@@ -17,33 +17,33 @@
     <div class="editor-content">
       <div class="editor-form glass-effect">
         <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-          <el-form-item label="标题" prop="title">
+          <el-form-item :label="$t('article_management.article_title')" prop="title">
             <el-input
               v-model="form.title"
-              placeholder="请输入文章标题"
+              :placeholder="$t('article_editor.title_placeholder')"
               size="large"
             />
           </el-form-item>
 
-          <el-form-item label="摘要" prop="summary">
+          <el-form-item :label="$t('article_editor.summary')" prop="summary">
             <el-input
               v-model="form.summary"
               type="textarea"
               :rows="3"
-              placeholder="请输入文章摘要"
+              :placeholder="$t('article_editor.summary_placeholder')"
               maxlength="500"
               show-word-limit
             />
           </el-form-item>
 
-          <el-form-item label="标签" prop="tags">
+          <el-form-item :label="$t('article_management.tags')" prop="tags">
             <el-select
               v-model="form.tags"
               multiple
               filterable
               allow-create
               default-first-option
-              placeholder="请选择或输入标签"
+              :placeholder="$t('article_editor.tags_placeholder')"
               style="width: 100%"
             >
               <el-option
@@ -55,24 +55,24 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="封面图">
+          <el-form-item :label="$t('article_editor.cover_image')">
             <el-input
               v-model="form.coverImage"
-              placeholder="请输入封面图URL（可选）"
+              :placeholder="$t('article_editor.cover_image_placeholder')"
             />
           </el-form-item>
 
-          <el-form-item label="内容" prop="content">
+                    <el-form-item :label="$t('article_editor_page.content')" prop="content">
             <div class="editor-container">
               <div class="editor-toolbar">
-                <span class="toolbar-title">Markdown编辑器</span>
-                <span class="toolbar-tip">支持Markdown语法</span>
+                <span class="toolbar-title">{{ $t('article_editor_page.markdown_editor') }}</span>
+                <span class="toolbar-tip">{{ $t('article_editor_page.markdown_supported') }}</span>
               </div>
               <el-input
                 v-model="form.content"
                 type="textarea"
                 :rows="20"
-                placeholder="请输入文章内容（支持Markdown语法）"
+                :placeholder="$t('article_editor_page.content_placeholder')"
                 class="content-editor"
               />
             </div>
@@ -82,7 +82,7 @@
 
       <div class="preview-panel glass-effect" v-if="form.content">
         <div class="preview-header">
-          <h3>预览</h3>
+          <h3>{{ $t('article_management.preview') }}</h3>
         </div>
         <div class="preview-content" v-html="formattedContent"></div>
       </div>

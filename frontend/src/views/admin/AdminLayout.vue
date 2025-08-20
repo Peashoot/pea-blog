@@ -2,24 +2,24 @@
   <div class="admin-layout">
     <div class="admin-sidebar">
       <div class="admin-header">
-        <h2 class="gradient-text">管理后台</h2>
+        <h2 class="gradient-text">{{ $t('admin_layout.dashboard') }}</h2>
       </div>
       
       <nav class="admin-nav">
         <router-link to="/admin/articles" class="nav-item">
           <el-icon><Document /></el-icon>
-          <span>文章管理</span>
+          <span>{{ $t('admin_layout.articles') }}</span>
         </router-link>
         <router-link to="/admin/articles/new" class="nav-item">
           <el-icon><EditPen /></el-icon>
-          <span>新建文章</span>
+          <span>{{ $t('article_editor.create_article') }}</span>
         </router-link>
       </nav>
 
       <div class="admin-footer">
         <button class="back-btn" @click="$router.push('/')">
           <el-icon><Back /></el-icon>
-          <span>返回首页</span>
+          <span>{{ $t('admin_layout.back_to_site') }}</span>
         </button>
       </div>
     </div>

@@ -1,5 +1,9 @@
+import { useI18n } from 'vue-i18n'
+
 export const formatDate = (dateString: string | undefined | null): string => {
-  if (!dateString) return 'Date not available'
+  const { t, d } = useI18n()
+
+  if (!dateString) return t('time.date_not_available')
   
   // Handle "YYYY-MM-DD HH:MM:SS" format by replacing space with T
   const formattedDateString = dateString.replace(' ', 'T');
@@ -9,7 +13,7 @@ export const formatDate = (dateString: string | undefined | null): string => {
     // Try parsing without replacement if the first attempt fails
     const originalDate = new Date(dateString);
     if (isNaN(originalDate.getTime())) {
-      return 'Date not available'; // Return placeholder if still invalid
+      return t('time.date_not_available'); // Return placeholder if still invalid
     }
     date.setTime(originalDate.getTime());
   }
@@ -22,19 +26,15 @@ export const formatDate = (dateString: string | undefined | null): string => {
     const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
     if (diffHours === 0) {
       const diffMinutes = Math.floor(diffTime / (1000 * 60))
-      return diffMinutes <= 0 ? '刚刚' : `${diffMinutes}分钟前`
+      return diffMinutes <= 0 ? t('time.just_now') : t('time.minutes_ago', { n: diffMinutes })
     }
-    return `${diffHours}小时前`
+    return t('time.hours_ago', { n: diffHours })
   } else if (diffDays === 1) {
-    return '昨天'
+    return t('time.yesterday')
   } else if (diffDays < 7) {
-    return `${diffDays}天前`
+    return t('time.days_ago', { n: diffDays })
   } else {
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    return d(date, 'long')
   }
 }
 

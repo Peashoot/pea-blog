@@ -6,6 +6,9 @@ import (
 	"pea-blog-backend/pkg/logger"
 	"pea-blog-backend/pkg/response"
 	"strconv"
+	"strings"
+
+	"pea-blog-backend/internal/util"
 
 	"github.com/gin-gonic/gin"
 )
@@ -363,12 +366,22 @@ func (h *CommentHandler) DeleteComment(c *gin.Context) {
 	}
 
 	var authorID int
+	var isAdmin bool
 	var fingerprint *string
 
-	userIDValue, exists := c.Get("userID")
-	if exists {
-		authorID = userIDValue.(int)
-	} else {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader != "" {
+		bearerToken := strings.Split(authHeader, " ")
+		if len(bearerToken) == 2 && bearerToken[0] == "Bearer" {
+			claims, err := util.ValidateJWT(bearerToken[1])
+			if err == nil {
+				authorID = claims.UserID
+				isAdmin = claims.Role == "admin"
+			}
+		}
+	}
+
+	if authorID == 0 {
 		var req struct {
 			Fingerprint string `json:"fingerprint"`
 		}
@@ -376,9 +389,6 @@ func (h *CommentHandler) DeleteComment(c *gin.Context) {
 			fingerprint = &req.Fingerprint
 		}
 	}
-
-	role, _ := c.Get("role")
-	isAdmin := role == "admin"
 
 	err = h.commentService.DeleteComment(commentID, authorID, isAdmin, fingerprint)
 	if err != nil {

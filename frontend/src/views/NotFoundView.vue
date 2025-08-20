@@ -9,17 +9,17 @@
           </div>
         </div>
         
-        <h2>页面未找到</h2>
-        <p>抱歉，您访问的页面不存在或已被移动。</p>
+        <h2>{{ $t('not_found_page.title') }}</h2>
+        <p>{{ $t('not_found_page.message') }}</p>
         
         <div class="actions">
           <router-link to="/" class="tech-button">
             <el-icon><HomeFilled /></el-icon>
-            返回首页
+            {{ $t('not_found_page.back_to_home') }}
           </router-link>
           <button class="tech-button secondary" @click="goBack">
             <el-icon><Back /></el-icon>
-            返回上页
+            {{ $t('not_found_page.go_back') }}
           </button>
         </div>
       </div>

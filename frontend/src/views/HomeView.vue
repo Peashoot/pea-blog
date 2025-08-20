@@ -5,8 +5,8 @@
     <main class="main-content">
       <div class="container">
         <div class="hero-section">
-          <h1 class="hero-title gradient-text">欢迎来到 Pea Blog</h1>
-          <p class="hero-subtitle">分享技术见解，记录学习旅程</p>
+          <h1 class="hero-title gradient-text">{{ $t('home.welcome') }}</h1>
+          <p class="hero-subtitle">{{ $t('home.subtitle') }}</p>
         </div>
 
         <SearchBar @search="handleSearch" @clear="handleClear" />
@@ -28,14 +28,14 @@
 
           <div v-else class="empty-state">
             <el-icon size="48" color="var(--text-secondary)"><Document /></el-icon>
-            <p>暂无文章</p>
+            <p>{{ $t('home.no_articles') }}</p>
           </div>
 
-          <div v-if="articleStore.hasMore && !articleStore.isLoading" class="load-more">
-            <button class="tech-button" @click="loadMore">
-              加载更多
-            </button>
-          </div>
+          <div v-if="hasMoreComments" class="load-more-comments">
+              <button class="tech-button" @click="loadComments(true)" :disabled="isLoadingComments">
+                {{ isLoadingComments ? '加载中...' : $t('home.load_more') }}
+              </button>
+            </div>
         </div>
       </div>
     </main>

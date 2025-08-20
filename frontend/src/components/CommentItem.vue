@@ -14,7 +14,7 @@
       <div class="comment-actions">
         <button class="action-btn" @click="$emit('reply', comment)">
           <el-icon><ChatRound /></el-icon>
-          回复
+          {{ $t('article_detail.reply') }}
         </button>
         <button 
           v-if="canDelete"
@@ -22,7 +22,7 @@
           @click="$emit('delete', comment.id)"
         >
           <el-icon><Delete /></el-icon>
-          删除
+          {{ $t('article_detail.delete') }}
         </button>
       </div>
     </div>
@@ -37,10 +37,10 @@
 
     <div class="comment-footer">
       <button v-if="comment.reply_count > 0 && !showReplies" class="action-btn" @click="toggleReplies">
-        查看 {{ comment.reply_count }} 条回复
+        {{ $t('comment_item.view_replies', { n: comment.reply_count }) }}
       </button>
       <button v-if="showReplies" class="action-btn" @click="toggleReplies">
-        收起回复
+        {{ $t('comment_item.hide_replies') }}
       </button>
     </div>
     
@@ -54,7 +54,7 @@
         @delete="$emit('delete', $event)"
       />
       <button v-if="hasMoreReplies" class="action-btn load-more-replies" @click="loadReplies(true)">
-        加载更多回复
+        {{ $t('comment_item.load_more_replies') }}
       </button>
     </div>
   </div>

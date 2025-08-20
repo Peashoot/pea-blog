@@ -3,7 +3,7 @@
     <div class="search-input-wrapper">
       <el-input
         v-model="searchQuery"
-        placeholder="搜索文章标题、内容或标签..."
+        :placeholder="$t('search_bar.placeholder')"
         size="large"
         clearable
         @keyup.enter="handleSearch"
@@ -15,17 +15,17 @@
       </el-input>
       <button class="search-btn tech-button" @click="handleSearch">
         <el-icon><Search /></el-icon>
-        <span v-if="!isMobile">搜索</span>
+        <span v-if="!isMobile">{{ $t('search_bar.search_button') }}</span>
       </button>
     </div>
     
     <div class="filters" v-if="showFilters">
       <div class="filter-section">
-        <label>标签筛选:</label>
+        <label>{{ $t('search_bar.tags_filter') }}</label>
         <el-select
           v-model="selectedTags"
           multiple
-          placeholder="选择标签"
+          :placeholder="$t('search_bar.select_tags')"
           size="small"
           style="width: 200px"
         >
@@ -39,19 +39,19 @@
       </div>
       
       <div class="filter-section">
-        <label>排序方式:</label>
+        <label>{{ $t('search_bar.sort_by') }}</label>
         <el-select v-model="sortBy" size="small" style="width: 120px">
-          <el-option label="最新发布" value="created_at" />
-          <el-option label="最多浏览" value="view_count" />
-          <el-option label="最多点赞" value="like_count" />
+          <el-option :label="$t('search_bar.latest')" value="created_at" />
+          <el-option :label="$t('search_bar.most_viewed')" value="view_count" />
+          <el-option :label="$t('search_bar.most_liked')" value="like_count" />
         </el-select>
       </div>
       
       <div class="filter-section">
-        <label>排序顺序:</label>
+        <label>{{ $t('search_bar.sort_order') }}</label>
         <el-select v-model="sortOrder" size="small" style="width: 100px">
-          <el-option label="降序" value="desc" />
-          <el-option label="升序" value="asc" />
+          <el-option :label="$t('search_bar.descending')" value="desc" />
+          <el-option :label="$t('search_bar.ascending')" value="asc" />
         </el-select>
       </div>
     </div>
@@ -63,7 +63,7 @@
         :class="{ active: showFilters }"
       >
         <el-icon><Filter /></el-icon>
-        <span v-if="!isMobile">高级筛选</span>
+        <span v-if="!isMobile">{{ $t('search_bar.advanced_filter') }}</span>
       </button>
     </div>
   </div>

@@ -1,17 +1,17 @@
 <template>
   <div class="article-management">
     <div class="page-header">
-      <h1>文章管理</h1>
+      <h1>{{ $t('article_management.title') }}</h1>
       <router-link to="/admin/articles/new" class="tech-button">
         <el-icon><Plus /></el-icon>
-        新建文章
+        {{ $t('article_management.new_article') }}
       </router-link>
     </div>
 
     <div class="articles-list glass-effect">
       <div v-if="isLoading" class="loading-container">
         <div class="loading-spinner"></div>
-        <p>加载中...</p>
+        <p>{{ $t('article_management_page.loading') }}</p>
       </div>
 
       <div v-else-if="articles.length > 0">
@@ -19,7 +19,7 @@
           <div class="article-info">
             <div class="article-title">{{ article.title }}</div>
             <div class="article-meta">
-              <span class="status" :class="article.status">{{ article.status === 'published' ? '已发布' : '草稿' }}</span>
+              <span class="status" :class="article.status">{{ article.status === 'published' ? $t('article_management_page.published') : $t('article_management_page.draft') }}</span>
               <span class="date">{{ formatDate(article.created_at) }}</span>
               <span class="stats">
                 <el-icon><View /></el-icon>
@@ -33,19 +33,19 @@
           <div class="article-actions">
             <button v-if="article.status === 'draft'" class="action-btn publish-btn" @click="handlePublish(article.id)">
               <el-icon><Promotion /></el-icon>
-              发布
+              {{ $t('article_management.publish') }}
             </button>
             <router-link :to="`/articles/${article.id}`" class="action-btn view-btn">
               <el-icon><View /></el-icon>
-              预览
+              {{ $t('article_management.preview') }}
             </router-link>
             <router-link :to="`/admin/articles/${article.id}/edit`" class="action-btn edit-btn">
               <el-icon><Edit /></el-icon>
-              编辑
+              {{ $t('article_management.edit') }}
             </router-link>
             <button class="action-btn delete-btn" @click="handleDelete(article.id)">
               <el-icon><Delete /></el-icon>
-              删除
+              {{ $t('article_management.delete') }}
             </button>
           </div>
         </div>
@@ -53,8 +53,8 @@
 
       <div v-else class="empty-state">
         <el-icon size="48"><Document /></el-icon>
-        <p>暂无文章</p>
-        <router-link to="/admin/articles/new" class="tech-button">创建第一篇文章</router-link>
+        <p>{{ $t('article_management.no_articles') }}</p>
+        <router-link to="/admin/articles/new" class="tech-button">{{ $t('article_management.create_first_article') }}</router-link>
       </div>
     </div>
   </div>
@@ -65,7 +65,9 @@ import { computed, onMounted, ref } from 'vue'
 import { useArticleStore } from '@/stores'
 import { formatDate } from '@/utils'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const articleStore = useArticleStore()
 const isLoading = ref(false)
 const articles = computed(() => articleStore.articles)
@@ -75,7 +77,7 @@ const loadArticles = async () => {
     isLoading.value = true
     await articleStore.fetchArticles({ page: 1, pageSize: 50 })
   } catch (error) {
-    ElMessage.error('加载文章失败')
+    ElMessage.error(t('article_management_page.load_fail'))
   } finally {
     isLoading.value = false
   }
@@ -83,53 +85,53 @@ const loadArticles = async () => {
 
 const handlePublish = async (id: number) => {
   try {
-    await ElMessageBox.confirm('确定要发布这篇文章吗？', '发布确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('article_management_page.publish_confirm_text'), t('article_management_page.publish_confirm_title'), {
+      confirmButtonText: t('article_management_page.confirm'),
+      cancelButtonText: t('article_management_page.cancel'),
       type: 'info'
     })
     
     await articleStore.publishArticle(id)
-    ElMessage.success('发布成功')
+    ElMessage.success(t('article_management_page.publish_success'))
     await loadArticles()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('发布失败')
+      ElMessage.error(t('article_management_page.publish_fail'))
     }
   }
 }
 
 const handleDelete = async (id: number) => {
   try {
-    await ElMessageBox.confirm('确定要删除这篇文章吗？', '删除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('article_management_page.delete_confirm_text'), t('article_management_page.delete_confirm_title'), {
+      confirmButtonText: t('article_management_page.confirm'),
+      cancelButtonText: t('article_management_page.cancel'),
       type: 'warning'
     })
     
     await articleStore.deleteArticle(id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('article_management_page.delete_success'))
     await loadArticles()
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+      ElMessage.error(t('article_management_page.delete_fail'))
     }
   }
 }
 
 const handleUnpublish = async (id: number) => {
   try {
-    await ElMessageBox.confirm('确定要取消发布这篇文章吗？', '取消发布确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('article_management_page.unpublish_confirm_text'), t('article_management_page.unpublish_confirm_title'), {
+      confirmButtonText: t('article_management_page.confirm'),
+      cancelButtonText: t('article_management_page.cancel'),
       type: 'warning'
     })
     
     await articleStore.unpublishArticle(id)
-    ElMessage.success('取消发布成功')
+    ElMessage.success(t('article_management_page.unpublish_success'))
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('取消发布失败')
+      ElMessage.error(t('article_management_page.unpublish_fail'))
     }
   }
 }
@@ -143,9 +145,9 @@ const triggerImport = () => {
 const handleExport = async () => {
   try {
     await articleStore.exportArticles()
-    ElMessage.success('导出成功')
+    ElMessage.success(t('article_management_page.export_success'))
   } catch (error) {
-    ElMessage.error('导出失败')
+    ElMessage.error(t('article_management_page.export_fail'))
   }
 }
 
@@ -155,10 +157,10 @@ const handleImport = async (event: Event) => {
     const file = target.files[0]
     try {
       await articleStore.importArticles(file)
-      ElMessage.success('导入成功')
+      ElMessage.success(t('article_management_page.import_success'))
       await loadArticles()
     } catch (error) {
-      ElMessage.error('导入失败')
+      ElMessage.error(t('article_management_page.import_fail'))
     }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <article class="article-card glass-effect" @click="$emit('click')">
-    <div v-if="article.coverImage" class="article-cover">
-      <img :src="article.coverImage" :alt="article.title" />
+    <div v-if="article.cover_image" class="article-cover">
+      <img :src="article.cover_image" :alt="article.title" />
     </div>
     
     <div class="article-content">
@@ -26,15 +26,15 @@
       <div class="article-stats">
         <div class="stat">
           <el-icon><View /></el-icon>
-          <span>{{ article.view_count }}</span>
+          <span>{{ article.view_count }} {{ $t('article_card.views') }}</span>
         </div>
         <div class="stat">
           <el-icon><Star /></el-icon>
-          <span>{{ article.like_count }}</span>
+          <span>{{ article.like_count }} {{ $t('article_card.likes') }}</span>
         </div>
         <div class="stat">
           <el-icon><ChatDotRound /></el-icon>
-           <span>{{ article.comment_count }}</span>
+           <span>{{ article.comment_count }} {{ $t('article_card.comments') }}</span>
         </div>
       </div>
     </div>

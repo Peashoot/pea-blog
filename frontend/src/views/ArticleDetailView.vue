@@ -1,5 +1,5 @@
 <template>
-  <div class="article-detail-page">
+  <div class="article-detail-page" ref="pageTop">
     <Navbar />
     
     <main class="main-content">
@@ -18,21 +18,21 @@
                 </el-avatar>
                 <div class="author-details">
                   <span class="author-name">{{ article.author?.username }}</span>
-                  <span class="publish-date">{{ formatDate(article.created_at) }}</span>
+                  <span class="publish-date">{{ $t('article_detail.publish_date') }}: {{ formatDate(article.created_at) }}</span>
                 </div>
               </div>
               
               <div class="article-stats">
                 <div class="stat">
                   <el-icon><View /></el-icon>
-                  <span>{{ article.view_count }}</span>
+                  <span>{{ article.view_count }} {{ $t('article_detail.views') }}</span>
                 </div>
                 <div class="stat like-stat" @click="toggleLike">
                   <el-icon :class="{ liked: isLiked }">
                     <Star v-if="isLiked" />
                     <StarFilled v-else />
                   </el-icon>
-                  <span>{{ article.like_count }}</span>
+                  <span>{{ article.like_count }} {{ $t('article_detail.likes') }}</span>
                 </div>
               </div>
             </div>
@@ -46,8 +46,8 @@
             </div>
           </header>
 
-          <div v-if="article.coverImage" class="article-cover">
-            <img :src="article.coverImage" :alt="article.title" />
+          <div v-if="article.cover_image" class="article-cover">
+            <img :src="article.cover_image" :alt="article.title" />
           </div>
 
           <div class="article-content" v-html="formattedContent"></div>
@@ -55,35 +55,35 @@
 
         <div v-else class="error-state">
           <el-icon size="48" color="var(--text-secondary)"><DocumentDelete /></el-icon>
-          <p>文章不存在或已被删除</p>
-          <router-link to="/" class="tech-button">返回首页</router-link>
+          <p>{{ $t('article_detail_page.not_found') }}</p>
+          <router-link to="/" class="tech-button">{{ $t('article_detail_page.back_to_home') }}</router-link>
         </div>
 
         <!-- 评论区域 -->
         <div v-if="article" class="comments-section">
           <div class="comments-header">
-            <h3>评论 ({{ comments.length }})</h3>
+            <h3>{{ $t('article_detail.comments') }} ({{ article.comment_count }})</h3>
           </div>
 
           <div class="comment-form glass-effect">
-            <el-input
-              v-model="newComment"
-              type="textarea"
-              :rows="3"
-              placeholder="写下你的想法..."
-              maxlength="1000"
-              show-word-limit
-            />
+            <div 
+              class="comment-input"
+              contenteditable="true"
+              :placeholder="$t('article_detail.comment_placeholder')"
+              @input="handleCommentInput"
+              ref="commentInput"
+            >
+            </div>
             <div class="comment-actions">
               <button v-if="replyTo" class="tech-button secondary" @click="cancelReply">
-                取消回复
+                {{ $t('article_detail.cancel_reply') }}
               </button>
               <button 
                 class="tech-button"
                 @click="submitComment"
                 :disabled="!newComment.trim() || isSubmittingComment"
               >
-                {{ isSubmittingComment ? '发布中...' : '发布评论' }}
+                {{ isSubmittingComment ? $t('article_detail_page.publishing') : $t('article_detail.submit_comment') }}
               </button>
             </div>
           </div>
@@ -91,7 +91,7 @@
           <div class="comments-list" ref="commentsList">
             <div v-if="isLoadingComments && comments.length === 0" class="loading-container">
               <div class="loading-spinner"></div>
-              <p>加载评论中...</p>
+              <p>{{ $t('article_detail_page.loading_comments') }}</p>
             </div>
             
             <div v-else-if="comments.length > 0">
@@ -107,12 +107,12 @@
             </div>
             
             <div v-else class="empty-comments">
-              <p>暂无评论，快来抢沙发吧！</p>
+              <p>{{ $t('article_detail.no_comments') }}</p>
             </div>
 
             <div v-if="hasMoreComments" class="load-more-comments">
               <button class="tech-button" @click="loadComments(true)" :disabled="isLoadingComments">
-                {{ isLoadingComments ? '加载中...' : '加载更多评论' }}
+                {{ isLoadingComments ? $t('article_detail_page.loading_comments') : $t('article_detail.load_more_comments') }}
               </button>
             </div>
           </div>
@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useArticleStore, useAuthStore } from '@/stores'
 import { commentApi } from '@/api'
@@ -133,7 +133,9 @@ import CommentItem from '@/components/CommentItem.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { Comment, User } from '@/types'
 import { marked } from 'marked'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const articleStore = useArticleStore()
 const authStore = useAuthStore()
@@ -153,6 +155,8 @@ const hasMoreComments = computed(() => {
   return flattenedComments.length < totalComments.value
 })
 const replyTo = ref<Comment | null>(null)
+const commentForm = ref<HTMLElement | null>(null)
+const commentInput = ref<any>(null)
 
 const formattedContent = computed(() => {
   if (!article.value?.content) return ''
@@ -249,6 +253,9 @@ const submitComment = async () => {
     newComment.value = ''
     replyTo.value = null
     totalComments.value++
+    if (article.value) {
+      article.value.comment_count++
+    }
     ElMessage.success('评论发布成功')
   } catch (error) {
     ElMessage.error('评论发布失败')
@@ -259,7 +266,37 @@ const submitComment = async () => {
 
 const handleReply = (parentComment: Comment) => {
   replyTo.value = parentComment
-  newComment.value = `@${parentComment.author?.username} `
+  nextTick(() => {
+    if (commentInput.value) {
+      commentInput.value.innerHTML = ''
+      const tag = document.createElement('span')
+      tag.className = 'el-tag el-tag--small reply-tag'
+      tag.innerHTML = `@${parentComment.author?.username}`
+      tag.contentEditable = 'false'
+      commentInput.value.appendChild(tag)
+
+      // Add a space after the tag
+      const space = document.createTextNode(' ');
+      commentInput.value.appendChild(space);
+
+      commentInput.value.focus()
+
+      // Move cursor to the end
+      const range = document.createRange()
+      const sel = window.getSelection()
+      range.selectNodeContents(commentInput.value)
+      range.collapse(false)
+      sel?.removeAllRanges()
+      sel?.addRange(range)
+
+      commentForm.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  })
+}
+
+const handleCommentInput = (event: Event) => {
+  const target = event.target as HTMLElement
+  newComment.value = target.innerText
 }
 
 const cancelReply = () => {
@@ -271,11 +308,15 @@ import { getStoredFingerprint } from '@/utils/fingerprint'
 
 const handleDeleteComment = async (commentId: number) => {
   try {
-    await ElMessageBox.confirm('确定要删除这条评论吗？', '删除确认', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
+    await ElMessageBox.confirm(
+      t('article_detail.delete_comment_confirm_text'),
+      t('article_detail.delete_comment_confirm_title'),
+      {
+        confirmButtonText: t('article_detail.confirm'),
+        cancelButtonText: t('article_detail.cancel'),
+        type: 'warning',
+      }
+    )
 
     let fingerprint: string | null = null
     if (!authStore.isLoggedIn) {
@@ -295,15 +336,21 @@ const handleDeleteComment = async (commentId: number) => {
     }
 
     totalComments.value--
-    ElMessage.success('评论删除成功')
+    ElMessage.success(t('article_detail.delete_comment_success'))
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('删除评论失败')
+      ElMessage.error(t('article_detail.delete_comment_fail'))
     }
   }
 }
 
+const pageTop = ref<HTMLElement | null>(null)
+
 onMounted(async () => {
+  if (pageTop.value) {
+    pageTop.value.scrollIntoView()
+  }
+
   if (!articleId.value) return
 
   try {
@@ -500,10 +547,25 @@ onMounted(async () => {
   margin-bottom: 2rem;
 }
 
+.comment-input {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  min-height: 120px;
+  background-color: white;
+  color: black;
+}
+
+.comment-input :deep(.reply-tag) {
+  background-color: #87CEEB; /* sky blue */
+  color: white;
+}
+
 .comment-actions {
   display: flex;
   justify-content: flex-end;
   margin-top: 1rem;
+  gap: 0.5rem;
 }
 
 .comments-list {

@@ -7,7 +7,20 @@
         </router-link>
         
         <nav class="nav-menu" :class="{ active: isMobileMenuOpen }">
-          <router-link to="/" class="nav-link" @click="closeMobileMenu">首页</router-link>
+          <router-link to="/" class="nav-link" @click="closeMobileMenu">{{ $t('navbar.home') }}</router-link>
+          <div class="language-switcher">
+            <el-dropdown @command="handleLanguageCommand">
+              <span class="el-dropdown-link">
+                <el-icon><Switch /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="zh-CN">中文</el-dropdown-item>
+                  <el-dropdown-item command="en">English</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
           <div v-if="authStore.isLoggedIn" class="nav-user">
             <el-dropdown @command="handleUserCommand">
               <span class="user-info">
@@ -21,11 +34,11 @@
                 <el-dropdown-menu>
                   <el-dropdown-item v-if="authStore.isAdmin" command="admin">
                     <el-icon><Setting /></el-icon>
-                    管理后台
+                    {{ $t('navbar.admin') }}
                   </el-dropdown-item>
                   <el-dropdown-item command="logout">
                     <el-icon><SwitchButton /></el-icon>
-                    退出登录
+                    {{ $t('navbar.logout') }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -37,7 +50,7 @@
             class="nav-link login-btn tech-button"
             @click="closeMobileMenu"
           >
-            登录
+            {{ $t('navbar.login') }}
           </router-link>
         </nav>
 
@@ -59,10 +72,12 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores'
 import { useResponsive } from '@/composables'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { isMobile } = useResponsive()
+const { locale } = useI18n()
 
 const isMobileMenuOpen = ref(false)
 
@@ -74,6 +89,11 @@ const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
 }
 
+const handleLanguageCommand = (command: string) => {
+  locale.value = command
+  localStorage.setItem('locale', command)
+}
+
 const handleUserCommand = async (command: string) => {
   switch (command) {
     case 'admin':
@@ -81,7 +101,7 @@ const handleUserCommand = async (command: string) => {
       break
     case 'logout':
       await authStore.logout()
-      ElMessage.success('退出登录成功')
+      ElMessage.success(t('navbar.logout_success'))
       router.push('/')
       break
   }

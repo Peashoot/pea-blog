@@ -3,8 +3,8 @@
     <div class="login-container">
       <div class="login-card glass-effect">
         <div class="login-header">
-          <h1 class="gradient-text">登录</h1>
-          <p>欢迎回到 Pea Blog</p>
+          <h1 class="gradient-text">{{ $t('login.title') }}</h1>
+          <p>{{ $t('login.welcome_back') }}</p>
         </div>
 
         <el-form 
@@ -17,7 +17,7 @@
           <el-form-item prop="username">
             <el-input
               v-model="form.username"
-              placeholder="用户名"
+              :placeholder="$t('login.username_placeholder')"
               prefix-icon="User"
               :disabled="isLoading"
             />
@@ -27,7 +27,7 @@
             <el-input
               v-model="form.password"
               type="password"
-              placeholder="密码"
+              :placeholder="$t('login.password_placeholder')"
               prefix-icon="Lock"
               show-password
               :disabled="isLoading"
@@ -42,18 +42,18 @@
               :disabled="isLoading"
               style="width: 100%"
             >
-              <span v-if="isLoading">登录中...</span>
-              <span v-else>登录</span>
+              <span v-if="isLoading">{{ $t('login.logging_in') }}</span>
+              <span v-else>{{ $t('login.login_button') }}</span>
             </button>
           </el-form-item>
         </el-form>
 
         <div class="login-footer">
           <p class="demo-hint">
-            演示账户: admin / password
+            {{ $t('login.demo_account') }}
           </p>
           <router-link to="/" class="back-home">
-            ← 返回首页
+            {{ $t('login.back_to_home') }}
           </router-link>
         </div>
       </div>
@@ -62,11 +62,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores'
 import { ElMessage, type FormInstance } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
@@ -79,15 +81,15 @@ const form = reactive({
   password: ''
 })
 
-const rules = {
+const rules = computed(() => ({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' }
+    { required: true, message: t('login.username_required'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少6位', trigger: 'blur' }
+    { required: true, message: t('login.password_required'), trigger: 'blur' },
+    { min: 6, message: t('login.password_min_length'), trigger: 'blur' }
   ]
-}
+}))
 
 const handleLogin = async () => {
   if (!loginForm.value) return
@@ -102,12 +104,12 @@ const handleLogin = async () => {
       password: form.password
     })
 
-    ElMessage.success('登录成功')
+    ElMessage.success(t('login.login_success'))
     
     const redirect = route.query.redirect as string
     router.push(redirect || '/')
   } catch (error: any) {
-    ElMessage.error(error.message || '登录失败')
+    ElMessage.error(error.message || t('login.login_fail'))
   } finally {
     isLoading.value = false
   }
