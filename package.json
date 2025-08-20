@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@fingerprintjs/fingerprintjs": "^4.6.2",
+    "@types/marked": "^5.0.2",
+    "marked": "^16.2.0"
+  }
+}
