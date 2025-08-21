@@ -73,8 +73,10 @@
 import { ref, watch } from 'vue'
 import { useResponsive } from '@/composables'
 import { debounce } from '@/utils'
+import { useI18n } from 'vue-i18n'
 
 const { isMobile } = useResponsive()
+const { t } = useI18n()
 
 const searchQuery = ref('')
 const selectedTags = ref<string[]>([])
@@ -84,8 +86,8 @@ const showFilters = ref(false)
 
 const availableTags = ref([
   'Vue', 'TypeScript', 'JavaScript', 'React', 'Node.js', 
-  'Python', 'Golang', '前端', '后端', '全栈',
-  '算法', '数据结构', '系统设计', '数据库', 'Docker'
+  'Python', 'Golang', t('common.frontend'), t('common.backend'), t('common.full_stack'),
+  t('common.algorithm'), t('common.data_structure'), t('common.system_design'), t('common.database'), 'Docker'
 ])
 
 const emit = defineEmits<{

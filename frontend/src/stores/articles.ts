@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { articleApi } from '@/api'
-import type { Article, SearchParams, ArticleListResponse } from '@/types'
+import type { Article, SearchParams, ArticleListResponse, CreateArticleRequest, UpdateArticleRequest } from '@/types'
 
 export const useArticleStore = defineStore('article', () => {
   const articles = ref<Article[]>([])
@@ -79,7 +79,21 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  const createArticle = async (articleData: any) => {
+  const fetchArticleByTitle = async (title: string) => {
+    try {
+      isLoading.value = true
+      const article = await articleApi.getArticleByTitle(title)
+      currentArticle.value = article
+      return article
+    } catch (error) {
+      console.error('Fetch article by title error:', error)
+      throw error
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const createArticle = async (articleData: CreateArticleRequest) => {
     try {
       const newArticle = await articleApi.createArticle(articleData)
       articles.value.unshift(newArticle)
@@ -90,7 +104,7 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  const updateArticle = async (articleData: any) => {
+  const updateArticle = async (articleData: UpdateArticleRequest) => {
     try {
       const updatedArticle = await articleApi.updateArticle(articleData)
       const index = articles.value.findIndex(a => a.id === updatedArticle.id)
@@ -169,6 +183,24 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
+  const unpublishArticle = async (id: number) => {
+    try {
+      await articleApi.unpublishArticle(id)
+      const article = articles.value.find(a => a.id === id)
+      if (article) {
+        article.status = 'draft'
+        article.published_at = null
+      }
+      if (currentArticle.value?.id === id) {
+        currentArticle.value.status = 'draft'
+        currentArticle.value.published_at = null
+      }
+    } catch (error) {
+      console.error('Unpublish article error:', error)
+      throw error
+    }
+  }
+
   const searchArticles = async (keyword: string, params?: Omit<SearchParams, 'keyword'>) => {
     try {
       isLoading.value = true
@@ -204,12 +236,14 @@ export const useArticleStore = defineStore('article', () => {
     fetchArticles,
     fetchPublishedArticles,
     fetchArticleById,
+    fetchArticleByTitle,
     createArticle,
     updateArticle,
     publishArticle,
     deleteArticle,
     likeArticle,
     unlikeArticle,
+    unpublishArticle,
     searchArticles,
     resetState
   }

@@ -71,7 +71,7 @@ func Migrate(db *sql.DB) error {
 
 			`CREATE TABLE IF NOT EXISTS articles (
 				id SERIAL PRIMARY KEY,
-				title VARCHAR(200) NOT NULL,
+				title VARCHAR(200) UNIQUE NOT NULL,
 				content TEXT NOT NULL,
 				summary VARCHAR(500) NOT NULL,
 				tags TEXT[] DEFAULT '{}',
@@ -123,7 +123,7 @@ func Migrate(db *sql.DB) error {
 
 			`CREATE TABLE IF NOT EXISTS articles (
 				id INTEGER PRIMARY KEY AUTOINCREMENT,
-				title VARCHAR(200) NOT NULL,
+				title VARCHAR(200) UNIQUE NOT NULL,
 				content TEXT NOT NULL,
 				summary VARCHAR(500) NOT NULL,
 				tags TEXT DEFAULT '',
@@ -203,6 +203,7 @@ func Migrate(db *sql.DB) error {
 		`CREATE INDEX IF NOT EXISTS idx_comments_article_id ON comments(article_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id)`,
 		`CREATE INDEX IF NOT EXISTS idx_likes_article_id ON likes(article_id)`,
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_articles_title ON articles(title)`,
 	}
 
 	for _, index := range indexes {

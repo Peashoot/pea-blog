@@ -59,7 +59,7 @@ type Like struct {
 
 type CreateArticleRequest struct {
 	Title       string     `json:"title" binding:"required,min=1,max=200"`
-	Content     string     `json:"content" binding:"required,min=1,max=50000"`
+	Content     string     `json:"content" binding:"required,min=1,max=104857600"`
 	Summary     string     `json:"summary" binding:"required,min=1,max=500"`
 	Tags        []string   `json:"tags" binding:"max=10,dive,max=50"`
 	Status      string     `json:"status" binding:"required,oneof=draft published scheduled"`
@@ -69,7 +69,7 @@ type CreateArticleRequest struct {
 
 type UpdateArticleRequest struct {
 	Title       *string    `json:"title" binding:"omitempty,min=1,max=200"`
-	Content     *string    `json:"content" binding:"omitempty,min=1,max=50000"`
+	Content     *string    `json:"content" binding:"omitempty,min=1,max=104857600"`
 	Summary     *string    `json:"summary" binding:"omitempty,min=1,max=500"`
 	Tags        []string   `json:"tags" binding:"omitempty,max=10,dive,max=50"`
 	Status      *string    `json:"status" binding:"omitempty,oneof=draft published scheduled"`

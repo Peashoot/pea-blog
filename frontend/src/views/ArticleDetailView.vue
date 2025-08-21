@@ -6,7 +6,7 @@
       <div class="container">
         <div v-if="isLoading" class="loading-container">
           <div class="loading-spinner"></div>
-          <p>加载中...</p>
+          <p>{{ $t('common.loading') }}</p>
         </div>
 
         <article v-else-if="article" class="article-detail glass-effect">
@@ -59,7 +59,7 @@
           <router-link to="/" class="tech-button">{{ $t('article_detail_page.back_to_home') }}</router-link>
         </div>
 
-        <!-- 评论区域 -->
+        <!-- {{ $t('common.comments_section') }} -->
         <div v-if="article" class="comments-section">
           <div class="comments-header">
             <h3>{{ $t('article_detail.comments') }} ({{ article.comment_count }})</h3>
@@ -140,7 +140,7 @@ const route = useRoute()
 const articleStore = useArticleStore()
 const authStore = useAuthStore()
 
-const articleId = computed(() => Number(route.params.id))
+const articleTitle = computed(() => decodeURIComponent(route.params.title as string))
 const article = computed(() => articleStore.currentArticle)
 const isLoading = ref(false)
 const isLoadingComments = ref(false)
@@ -175,12 +175,12 @@ const toggleLike = async () => {
       isLiked.value = true
     }
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error(t('common.operation_failed'))
   }
 }
 
 const loadComments = async (loadMore = false) => {
-  if (!articleId.value || isLoadingComments.value) return
+  if (!article.value?.id || isLoadingComments.value) return
 
   try {
     isLoadingComments.value = true
@@ -190,7 +190,7 @@ const loadComments = async (loadMore = false) => {
     }
 
     const response = await commentApi.getCommentsByArticleId(
-      articleId.value,
+      article.value.id,
       currentPage.value,
       15
     )
@@ -201,7 +201,7 @@ const loadComments = async (loadMore = false) => {
     totalComments.value = response.total
     currentPage.value++
   } catch (error) {
-    ElMessage.error('加载评论失败')
+    ElMessage.error(t('common.load_comments_failed'))
   } finally {
     isLoadingComments.value = false
   }
@@ -210,7 +210,7 @@ const loadComments = async (loadMore = false) => {
 import { getFingerprint } from '@/utils/fingerprint'
 
 const submitComment = async () => {
-  if (!newComment.value.trim() || !articleId.value) return
+  if (!newComment.value.trim() || !article.value?.id) return
 
   try {
     isSubmittingComment.value = true
@@ -222,7 +222,7 @@ const submitComment = async () => {
 
     const comment = await commentApi.createComment({
       content: newComment.value.trim(),
-      article_id: articleId.value,
+      article_id: article.value.id,
       parent_id: replyTo.value?.id,
       fingerprint,
     })
@@ -256,9 +256,9 @@ const submitComment = async () => {
     if (article.value) {
       article.value.comment_count++
     }
-    ElMessage.success('评论发布成功')
+    ElMessage.success(t('common.comment_submit_success'))
   } catch (error) {
-    ElMessage.error('评论发布失败')
+    ElMessage.error(t('common.comment_submit_failed'))
   } finally {
     isSubmittingComment.value = false
   }
@@ -351,16 +351,14 @@ onMounted(async () => {
     pageTop.value.scrollIntoView()
   }
 
-  if (!articleId.value) return
-
   try {
     isLoading.value = true
-    await Promise.all([
-      articleStore.fetchArticleById(articleId.value),
-      loadComments()
-    ])
+    // First fetch the article
+    await articleStore.fetchArticleByTitle(articleTitle.value)
+    // Then load comments
+    await loadComments()
   } catch (error) {
-    ElMessage.error('加载文章失败')
+    ElMessage.error(t('common.load_articles_failed'))
   } finally {
     isLoading.value = false
   }

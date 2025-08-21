@@ -20,6 +20,10 @@ export const articleApi = {
     return apiClient.get(`/articles/${id}`)
   },
 
+  getArticleByTitle: (title: string): Promise<Article> => {
+    return apiClient.get(`/articles/title/${encodeURIComponent(title)}`)
+  },
+
   createArticle: (data: CreateArticleRequest): Promise<Article> => {
     return apiClient.post('/articles', data)
   },
@@ -46,7 +50,7 @@ export const articleApi = {
     })
   },
 
-  exportArticles: (): Promise<any> => {
+  exportArticles: (): Promise<Blob> => {
     return apiClient.get('/articles/export', { responseType: 'blob' })
   },
 
@@ -58,6 +62,10 @@ export const articleApi = {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+
+  unpublishArticle: (id: number): Promise<void> => {
+    return apiClient.post(`/articles/${id}/unpublish`)
   },
 
   uploadImage: (file: File): Promise<{ url: string }> => {

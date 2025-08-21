@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"net/url"
 	"pea-blog-backend/internal/model"
 	"pea-blog-backend/internal/service"
 	"pea-blog-backend/pkg/logger"
@@ -121,6 +122,25 @@ func (h *ArticleHandler) GetArticleByID(c *gin.Context) {
 	}
 
 	article, err := h.articleService.GetArticleByID(id)
+	if err != nil {
+		response.NotFound(c, err.Error())
+		return
+	}
+
+	response.Success(c, article)
+}
+
+func (h *ArticleHandler) GetArticleByTitle(c *gin.Context) {
+	title := c.Param("title")
+	
+	// URL decode the title
+	decodedTitle, err := url.QueryUnescape(title)
+	if err != nil {
+		response.BadRequest(c, "Invalid article title")
+		return
+	}
+
+	article, err := h.articleService.GetArticleByTitle(decodedTitle)
 	if err != nil {
 		response.NotFound(c, err.Error())
 		return

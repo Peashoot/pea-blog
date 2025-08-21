@@ -23,7 +23,7 @@ func (s *Scheduler) Start() {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		s.logger.Info("Scheduler checking for articles to publish...")
+		s.logger.Debug("Scheduler checking for articles to publish...")
 		errors := s.articleService.PublishScheduledArticles()
 		if len(errors) > 0 {
 			for _, err := range errors {

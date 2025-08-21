@@ -26,7 +26,7 @@ export interface Article {
   summary: string
   tags: string[]
   author: User
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'scheduled'
   view_count: number
   like_count: number
   comment_count: number

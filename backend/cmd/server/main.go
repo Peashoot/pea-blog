@@ -87,6 +87,7 @@ func main() {
 		articles.GET("", middleware.Auth(), handlers.Article.GetArticles)
 		articles.GET("/published", handlers.Article.GetPublishedArticles)
 		articles.GET("/:id", handlers.Article.GetArticleByID)
+		articles.GET("/title/:title", handlers.Article.GetArticleByTitle)
 		articles.GET("/search", handlers.Article.SearchArticles)
 		articles.POST("", middleware.Auth(), middleware.AdminOnly(), handlers.Article.CreateArticle)
 		articles.PUT("/:id", middleware.Auth(), middleware.AdminOnly(), handlers.Article.UpdateArticle)

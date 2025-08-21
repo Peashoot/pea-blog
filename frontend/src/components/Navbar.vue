@@ -7,20 +7,7 @@
         </router-link>
         
         <nav class="nav-menu" :class="{ active: isMobileMenuOpen }">
-          <router-link to="/" class="nav-link" @click="closeMobileMenu">{{ $t('navbar.home') }}</router-link>
-          <div class="language-switcher">
-            <el-dropdown @command="handleLanguageCommand">
-              <span class="el-dropdown-link">
-                <el-icon><Switch /></el-icon>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="zh-CN">中文</el-dropdown-item>
-                  <el-dropdown-item command="en">English</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
+          <router-link to="/" class="nav-link" @click="closeMobileMenu">{{ t('navbar.home') }}</router-link>
           <div v-if="authStore.isLoggedIn" class="nav-user">
             <el-dropdown @command="handleUserCommand">
               <span class="user-info">
@@ -34,11 +21,11 @@
                 <el-dropdown-menu>
                   <el-dropdown-item v-if="authStore.isAdmin" command="admin">
                     <el-icon><Setting /></el-icon>
-                    {{ $t('navbar.admin') }}
+                    {{ t('navbar.admin') }}
                   </el-dropdown-item>
                   <el-dropdown-item command="logout">
                     <el-icon><SwitchButton /></el-icon>
-                    {{ $t('navbar.logout') }}
+                    {{ t('navbar.logout') }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -50,7 +37,7 @@
             class="nav-link login-btn tech-button"
             @click="closeMobileMenu"
           >
-            {{ $t('navbar.login') }}
+            {{ t('navbar.login') }}
           </router-link>
         </nav>
 
@@ -77,7 +64,7 @@ import { useI18n } from 'vue-i18n'
 const router = useRouter()
 const authStore = useAuthStore()
 const { isMobile } = useResponsive()
-const { locale } = useI18n()
+const { t } = useI18n()
 
 const isMobileMenuOpen = ref(false)
 
@@ -87,11 +74,6 @@ const toggleMobileMenu = () => {
 
 const closeMobileMenu = () => {
   isMobileMenuOpen.value = false
-}
-
-const handleLanguageCommand = (command: string) => {
-  locale.value = command
-  localStorage.setItem('locale', command)
 }
 
 const handleUserCommand = async (command: string) => {
@@ -150,7 +132,7 @@ onUnmounted(() => {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 .nav-link {
@@ -170,10 +152,6 @@ onUnmounted(() => {
 .nav-link.router-link-active {
   background: var(--tech-gradient);
   color: white;
-}
-
-.login-btn {
-  margin-left: 1rem;
 }
 
 .nav-user .user-info {

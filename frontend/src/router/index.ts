@@ -9,44 +9,44 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { title: '首页' }
+      meta: { title: 'home' }
     },
     {
-      path: '/articles/:id',
+      path: '/articles/:title',
       name: 'article-detail',
       component: () => import('../views/ArticleDetailView.vue'),
-      meta: { title: '文章详情' },
-      props: (route) => ({ id: Number(route.params.id) })
+      meta: { title: 'article_detail' },
+      props: (route) => ({ title: route.params.title })
     },
     {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
-      meta: { title: '登录' }
+      meta: { title: 'login' }
     },
     {
       path: '/admin',
       redirect: '/admin/articles',
       component: () => import('../views/admin/AdminLayout.vue'),
-      meta: { title: '管理后台', requiresAuth: true, requiresAdmin: true },
+      meta: { title: 'admin_backend', requiresAuth: true, requiresAdmin: true },
       children: [
         {
           path: 'articles',
           name: 'admin-articles',
           component: () => import('../views/admin/ArticleManagement.vue'),
-          meta: { title: '文章管理' }
+          meta: { title: 'article_management' }
         },
         {
           path: 'articles/new',
           name: 'admin-article-new',
           component: () => import('../views/admin/ArticleEditor.vue'),
-          meta: { title: '新建文章' }
+          meta: { title: 'new_article' }
         },
         {
           path: 'articles/:id/edit',
           name: 'admin-article-edit',
           component: () => import('../views/admin/ArticleEditor.vue'),
-          meta: { title: '编辑文章' },
+          meta: { title: 'edit_article' },
           props: (route) => ({ id: Number(route.params.id) })
         }
       ]
@@ -55,7 +55,7 @@ const router = createRouter({
       path: '/:pathMatch(.*)*',
       name: 'not-found',
       component: () => import('../views/NotFoundView.vue'),
-      meta: { title: '页面未找到' }
+      meta: { title: 'page_not_found' }
     }
   ],
 })

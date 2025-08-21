@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Detection Test - Updated</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button.danger:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Language Detection Test - Updated Logic</h1>
+        
+        <div id="current-status" class="result">
+            <h3>Current Status:</h3>
+            <div id="status-content"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test Functions:</h3>
+            <button onclick="testLanguageDetection()">Test Language Detection</button>
+            <button onclick="clearLocalStorage()" class="danger">Clear localStorage</button>
+            <button onclick="showTestCases()">Show Test Cases</button>
+        </div>
+        
+        <div id="test-results"></div>
+        
+        <div id="test-cases" style="display: none;">
+            <h3>Test Cases:</h3>
+            <div id="cases-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟新的语言检测逻辑
+        const getSystemLanguage = () => {
+            const systemLang = navigator.language || navigator.languages?.[0] || 'en'
+            
+            if (systemLang.startsWith('zh')) {
+                return 'zh-CN'
+            }
+            
+            return 'en'
+        }
+        
+        const initializeLanguage = () => {
+            // 检查 localStorage 中是否已有语言设置
+            const savedLang = localStorage.getItem('locale')
+            if (savedLang) {
+                return savedLang
+            }
+            
+            // 如果没有保存的语言设置，检测系统语言并保存到 localStorage
+            const systemLang = getSystemLanguage()
+            localStorage.setItem('locale', systemLang)
+            return systemLang
+        }
+        
+        const updateStatus = () => {
+            const systemLang = navigator.language || navigator.languages?.[0] || 'en'
+            const detectedLang = getSystemLanguage()
+            const savedLang = localStorage.getItem('locale')
+            const currentLang = initializeLanguage()
+            
+            const statusContent = document.getElementById('status-content')
+            statusContent.innerHTML = `
+                <p><strong>Browser Language:</strong> ${systemLang}</p>
+                <p><strong>Detected Language:</strong> ${detectedLang}</p>
+                <p><strong>Saved in localStorage:</strong> ${savedLang || 'None'}</p>
+                <p><strong>Current App Language:</strong> ${currentLang}</p>
+                <p><strong>Has Saved Language:</strong> ${savedLang ? 'Yes' : 'No (will detect on first visit)'}</p>
+            `
+            
+            // Add status class based on whether language is saved
+            const statusDiv = document.getElementById('current-status')
+            if (savedLang) {
+                statusDiv.className = 'result success'
+            } else {
+                statusDiv.className = 'result warning'
+            }
+        }
+        
+        const testLanguageDetection = () => {
+            const testResults = document.getElementById('test-results')
+            
+            // Clear localStorage and test
+            localStorage.removeItem('locale')
+            const firstVisitLang = initializeLanguage()
+            
+            testResults.innerHTML = `
+                <div class="result success">
+                    <h3>Test Results:</h3>
+                    <p><strong>localStorage cleared</strong></p>
+                    <p><strong>Language detected on first visit:</strong> ${firstVisitLang}</p>
+                    <p><strong>Language saved to localStorage:</strong> ${localStorage.getItem('locale')}</p>
+                    <p><strong>Second visit language:</strong> ${initializeLanguage()}</p>
+                </div>
+            `
+            
+            updateStatus()
+        }
+        
+        const clearLocalStorage = () => {
+            localStorage.removeItem('locale')
+            updateStatus()
+            document.getElementById('test-results').innerHTML = `
+                <div class="result warning">
+                    <p>localStorage cleared! Next visit will detect system language.</p>
+                </div>
+            `
+        }
+        
+        const showTestCases = () => {
+            const testCasesDiv = document.getElementById('test-cases')
+            const casesContent = document.getElementById('cases-content')
+            
+            const testCases = [
+                'zh-CN', 'zh-TW', 'zh-HK', 'zh', 'en', 'en-US', 'en-GB', 'ja', 'ko', 'fr', 'de'
+            ]
+            
+            let casesHTML = ''
+            testCases.forEach(lang => {
+                const mockResult = lang.startsWith('zh') ? 'zh-CN' : 'en'
+                casesHTML += `<p><strong>${lang}:</strong> ${mockResult}</p>`
+            })
+            
+            casesContent.innerHTML = casesHTML
+            testCasesDiv.style.display = testCasesDiv.style.display === 'none' ? 'block' : 'none'
+        }
+        
+        // 初始化状态
+        updateStatus()
+    </script>
+</body>
+</html>

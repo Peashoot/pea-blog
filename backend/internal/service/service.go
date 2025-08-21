@@ -138,6 +138,16 @@ func (s *ArticleService) GetArticleByID(id int) (*model.Article, error) {
 	return article, nil
 }
 
+func (s *ArticleService) GetArticleByTitle(title string) (*model.Article, error) {
+	article, err := s.articleRepo.GetByTitle(title)
+	if err != nil {
+		s.logger.Error("Failed to get article by title", "title", title, "error", err)
+		return nil, fmt.Errorf("article not found")
+	}
+
+	return article, nil
+}
+
 func (s *ArticleService) CreateArticle(req model.CreateArticleRequest, authorID int) (*model.Article, error) {
 	article := &model.Article{
 		Title:      req.Title,

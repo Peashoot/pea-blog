@@ -19,8 +19,16 @@
           <div class="article-info">
             <div class="article-title">{{ article.title }}</div>
             <div class="article-meta">
-              <span class="status" :class="article.status">{{ article.status === 'published' ? $t('article_management_page.published') : $t('article_management_page.draft') }}</span>
+              <span class="status" :class="article.status">
+                {{ article.status === 'published' ? $t('article_management_page.published') : 
+                   article.status === 'scheduled' ? $t('article_management_page.scheduled') : 
+                   $t('article_management_page.draft') }}
+              </span>
               <span class="date">{{ formatDate(article.created_at) }}</span>
+              <span v-if="article.status === 'scheduled' && article.published_at" class="schedule-info">
+                <el-icon><Timer /></el-icon>
+                {{ formatDate(article.published_at) }}
+              </span>
               <span class="stats">
                 <el-icon><View /></el-icon>
                 {{ article.view_count }}
@@ -35,7 +43,15 @@
               <el-icon><Promotion /></el-icon>
               {{ $t('article_management.publish') }}
             </button>
-            <router-link :to="`/articles/${article.id}`" class="action-btn view-btn">
+            <button v-if="article.status === 'draft'" class="action-btn schedule-btn" @click="handleSchedulePublish(article.id)">
+              <el-icon><Timer /></el-icon>
+              {{ $t('article_management.schedule_publish') }}
+            </button>
+            <button v-if="article.status === 'scheduled'" class="action-btn cancel-btn" @click="handleCancelSchedule(article.id)">
+              <el-icon><Close /></el-icon>
+              {{ $t('article_management.cancel_schedule') }}
+            </button>
+            <router-link v-if="article.status === 'published'" :to="`/articles/${encodeURIComponent(article.title)}`" class="action-btn view-btn">
               <el-icon><View /></el-icon>
               {{ $t('article_management.preview') }}
             </router-link>
@@ -66,6 +82,7 @@ import { useArticleStore } from '@/stores'
 import { formatDate } from '@/utils'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { Timer, Close, Promotion, Delete, Edit, View, Plus } from '@element-plus/icons-vue'
 
 const { t } = useI18n()
 const articleStore = useArticleStore()
@@ -75,7 +92,7 @@ const articles = computed(() => articleStore.articles)
 const loadArticles = async () => {
   try {
     isLoading.value = true
-    await articleStore.fetchArticles({ page: 1, pageSize: 50 })
+    await articleStore.fetchArticles({ page: 1, page_size: 50 })
   } catch (error) {
     ElMessage.error(t('article_management_page.load_fail'))
   } finally {
@@ -136,6 +153,70 @@ const handleUnpublish = async (id: number) => {
   }
 }
 
+const handleSchedulePublish = async (id: number) => {
+  try {
+    // Set default schedule time to 1 hour from now
+    const defaultTime = new Date()
+    defaultTime.setHours(defaultTime.getHours() + 1)
+    
+    const { value } = await ElMessageBox.prompt(
+      t('article_editor_page.select_publish_time'),
+      t('article_management.schedule_publish'),
+      {
+        confirmButtonText: t('article_editor.confirm_schedule'),
+        cancelButtonText: t('article_management_page.cancel'),
+        inputType: 'datetime-local',
+        inputValue: defaultTime.toISOString().slice(0, 16),
+        inputValidator: (value: string) => {
+          if (!value) {
+            return t('article_editor_page.select_publish_time')
+          }
+          const selectedTime = new Date(value)
+          if (selectedTime <= new Date()) {
+            return t('article_editor_page.select_publish_time')
+          }
+          return true
+        }
+      }
+    )
+    
+    const scheduledTime = new Date(value)
+    await articleStore.updateArticle({
+      id,
+      status: 'scheduled',
+      publishedAt: scheduledTime.toISOString()
+    })
+    ElMessage.success(t('article_editor_page.article_schedule_success'))
+    await loadArticles()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(t('article_management_page.publish_fail'))
+    }
+  }
+}
+
+const handleCancelSchedule = async (id: number) => {
+  try {
+    await ElMessageBox.confirm(t('article_management_page.cancel_schedule_confirm_text'), t('article_management_page.cancel_schedule_confirm_title'), {
+      confirmButtonText: t('article_management_page.confirm'),
+      cancelButtonText: t('article_management_page.cancel'),
+      type: 'warning'
+    })
+    
+    await articleStore.updateArticle({
+      id,
+      status: 'draft',
+      publishedAt: null
+    })
+    ElMessage.success(t('article_management_page.cancel_schedule_success'))
+    await loadArticles()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(t('article_management_page.cancel_schedule_fail'))
+    }
+  }
+}
+
 const fileInput = ref<HTMLInputElement | null>(null)
 
 const triggerImport = () => {
@@ -190,6 +271,29 @@ onMounted(() => {
 
 .articles-list {
   padding: 1.5rem;
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+/* Articles list scrollbar */
+.articles-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.articles-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.articles-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.4) 0%, rgba(147, 51, 234, 0.4) 100%);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.articles-list::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(0, 212, 255, 0.6) 0%, rgba(147, 51, 234, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .loading-container {
@@ -247,6 +351,19 @@ onMounted(() => {
 .status.draft {
   background: rgba(251, 191, 36, 0.2);
   color: #fbbf24;
+}
+
+.status.scheduled {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.schedule-info {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: #3b82f6;
 }
 
 .stats {
@@ -311,6 +428,26 @@ onMounted(() => {
 
 .delete-btn:hover {
   background: #ef4444;
+  color: white;
+}
+
+.schedule-btn {
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.schedule-btn:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.cancel-btn {
+  color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+.cancel-btn:hover {
+  background: #3b82f6;
   color: white;
 }
 

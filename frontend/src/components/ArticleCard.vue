@@ -26,15 +26,15 @@
       <div class="article-stats">
         <div class="stat">
           <el-icon><View /></el-icon>
-          <span>{{ article.view_count }} {{ $t('article_card.views') }}</span>
+          <span>{{ article.view_count }} {{ t('article_card.views') }}</span>
         </div>
         <div class="stat">
           <el-icon><Star /></el-icon>
-          <span>{{ article.like_count }} {{ $t('article_card.likes') }}</span>
+          <span>{{ article.like_count }} {{ t('article_card.likes') }}</span>
         </div>
         <div class="stat">
           <el-icon><ChatDotRound /></el-icon>
-           <span>{{ article.comment_count }} {{ $t('article_card.comments') }}</span>
+           <span>{{ article.comment_count }} {{ t('article_card.comments') }}</span>
         </div>
       </div>
     </div>
@@ -44,6 +44,7 @@
 <script setup lang="ts">
 import type { Article } from '@/types'
 import { formatDate } from '@/utils'
+import { useI18n } from 'vue-i18n'
 
 defineProps<{
   article: Article
@@ -52,6 +53,8 @@ defineProps<{
 defineEmits<{
   click: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <style scoped>

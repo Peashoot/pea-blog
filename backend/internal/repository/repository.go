@@ -332,6 +332,62 @@ func (r *ArticleRepository) GetByID(id int) (*model.Article, error) {
 	return article, nil
 }
 
+func (r *ArticleRepository) GetByTitle(title string) (*model.Article, error) {
+	article := &model.Article{}
+	author := &model.User{}
+	var tagsStr string
+
+	query := `
+		SELECT a.id, a.title, a.content, a.summary, a.tags, a.author_id, a.status,
+			   a.view_count, a.like_count, a.comment_count, a.cover_image,
+			   a.created_at, a.updated_at,
+			   u.id, u.username, u.email, u.avatar, u.role, u.created_at, u.updated_at
+		FROM articles a
+		JOIN users u ON a.author_id = u.id
+		WHERE a.title = ?
+	`
+
+	row := r.db.QueryRow(query, title)
+	err := row.Scan(
+		&article.ID, &article.Title, &article.Content, &article.Summary,
+		&tagsStr, &article.AuthorID, &article.Status,
+		&article.ViewCount, &article.LikeCount, &article.CommentCount,
+		&article.CoverImage, &article.CreatedAt, &article.UpdatedAt,
+		&author.ID, &author.Username, &author.Email, &author.Avatar,
+		&author.Role, &author.CreatedAt, &author.UpdatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("article not found")
+		}
+		return nil, err
+	}
+
+	// Parse tags
+	if r.dbType == "postgres" {
+		if err := pq.Array(&article.Tags).Scan(tagsStr); err != nil {
+			article.Tags = []string{}
+		}
+	} else {
+		// For SQLite, parse comma-separated string
+		if tagsStr != "" {
+			article.Tags = strings.Split(tagsStr, ",")
+		} else {
+			article.Tags = []string{}
+		}
+	}
+
+	article.Author = author
+
+	_, err = r.db.Exec("UPDATE articles SET view_count = view_count + 1 WHERE id = ?", article.ID)
+	if err != nil {
+		return nil, err
+	}
+	article.ViewCount++
+
+	return article, nil
+}
+
 func (r *ArticleRepository) Create(article *model.Article) error {
 	var tagsValue interface{}
 	if r.dbType == "postgres" {

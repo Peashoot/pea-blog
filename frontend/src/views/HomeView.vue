@@ -14,7 +14,7 @@
         <div class="content-section">
           <div v-if="articleStore.isLoading" class="loading-container">
             <div class="loading-spinner"></div>
-            <p>加载中...</p>
+            <p>{{ $t('common.loading') }}</p>
           </div>
 
           <div v-else-if="articles.length > 0" class="articles-grid">
@@ -22,7 +22,7 @@
               v-for="article in articles" 
               :key="article.id" 
               :article="article"
-              @click="goToArticle(article.id)"
+              @click="goToArticle(article.title)"
             />
           </div>
 
@@ -31,9 +31,9 @@
             <p>{{ $t('home.no_articles') }}</p>
           </div>
 
-          <div v-if="hasMoreComments" class="load-more-comments">
-              <button class="tech-button" @click="loadComments(true)" :disabled="isLoadingComments">
-                {{ isLoadingComments ? '加载中...' : $t('home.load_more') }}
+          <div v-if="articleStore.hasMore" class="load-more-comments">
+              <button class="tech-button" @click="loadMore" :disabled="articleStore.isLoading">
+                {{ articleStore.isLoading ? $t('common.loading') : $t('home.load_more') }}
               </button>
             </div>
         </div>
@@ -51,10 +51,12 @@ import Navbar from '@/components/Navbar.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import ArticleCard from '@/components/ArticleCard.vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const articleStore = useArticleStore()
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const currentSearchParams = ref<any>({})
 
@@ -66,20 +68,20 @@ const handleSearch = async (params: any) => {
     if (params.keyword) {
       await articleStore.searchArticles(params.keyword, {
         tags: params.tags.length ? params.tags : undefined,
-        sortBy: params.sortBy,
-        sortOrder: params.sortOrder,
+        sort_by: params.sortBy,
+        sort_order: params.sortOrder,
         page: 1
       })
     } else {
       await articleStore.fetchPublishedArticles({
         tags: params.tags.length ? params.tags.join(',') : undefined,
-        sortBy: params.sortBy,
-        sortOrder: params.sortOrder,
+        sort_by: params.sortBy,
+        sort_order: params.sortOrder,
         page: 1
       })
     }
   } catch (error) {
-    ElMessage.error('搜索失败')
+    ElMessage.error(t('common.search_failed'))
   }
 }
 
@@ -88,12 +90,12 @@ const handleClear = async () => {
     currentSearchParams.value = {}
     await articleStore.fetchArticles({ page: 1 })
   } catch (error) {
-    ElMessage.error('加载文章失败')
+    ElMessage.error(t('common.load_articles_failed'))
   }
 }
 
-const goToArticle = (id: number) => {
-  router.push(`/articles/${id}`)
+const goToArticle = (title: string) => {
+  router.push(`/articles/${encodeURIComponent(title)}`)
 }
 
 const loadMore = async () => {
@@ -111,7 +113,7 @@ const loadMore = async () => {
       })
     }
   } catch (error) {
-    ElMessage.error('加载更多文章失败')
+    ElMessage.error(t('common.load_more_articles_failed'))
   }
 }
 
@@ -126,7 +128,7 @@ onMounted(async () => {
     await authStore.initAuth()
     await articleStore.fetchPublishedArticles({ page: 1 })
   } catch (error) {
-    ElMessage.error('初始化失败')
+    ElMessage.error(t('common.init_failed'))
   }
 })
 </script>
