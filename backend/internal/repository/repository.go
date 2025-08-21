@@ -429,13 +429,13 @@ func (r *ArticleRepository) Update(article *model.Article) error {
 	query := `
 		UPDATE articles 
 		SET title = ?, content = ?, summary = ?, tags = ?, status = ?, 
-		    cover_image = ?, updated_at = CURRENT_TIMESTAMP
+		    cover_image = ?, published_at = ?, updated_at = CURRENT_TIMESTAMP
 		WHERE id = ?
 	`
 
 	_, err := r.db.Exec(query,
 		article.Title, article.Content, article.Summary,
-		tagsValue, article.Status, article.CoverImage, article.ID,
+		tagsValue, article.Status, article.CoverImage, article.PublishedAt, article.ID,
 	)
 
 	return err

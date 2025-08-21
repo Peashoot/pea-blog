@@ -157,6 +157,7 @@ func (s *ArticleService) CreateArticle(req model.CreateArticleRequest, authorID 
 		AuthorID:   authorID,
 		Status:     req.Status,
 		CoverImage: req.CoverImage,
+		PublishedAt: req.PublishedAt,
 	}
 
 	err := s.articleRepo.Create(article)
@@ -198,6 +199,9 @@ func (s *ArticleService) UpdateArticle(id int, req model.UpdateArticleRequest) (
 	}
 	if req.CoverImage != nil {
 		article.CoverImage = req.CoverImage
+	}
+	if req.PublishedAt != nil {
+		article.PublishedAt = req.PublishedAt
 	}
 
 	err = s.articleRepo.Update(article)
@@ -258,13 +262,16 @@ func (s *ArticleService) PublishScheduledArticles() []error {
 		return []error{err}
 	}
 
+	now := time.Now()
 	var errors []error
 	for _, article := range articles {
 		article.Status = "published"
+		article.PublishedAt = &now
 		err := s.articleRepo.Update(&article)
 		if err != nil {
 			errors = append(errors, err)
 		}
+		s.logger.Info("Article published from schedule", "articleID", article.ID, "scheduledTime", article.PublishedAt, "publishedAt", now)
 	}
 
 	return errors
