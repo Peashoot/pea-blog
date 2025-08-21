@@ -18,7 +18,9 @@
                 </el-avatar>
                 <div class="author-details">
                   <span class="author-name">{{ article.author?.username }}</span>
-                  <span class="publish-date">{{ $t('article_detail.publish_date') }}: {{ formatDate(article.created_at) }}</span>
+                  <span class="publish-date">
+                    {{ article.status === 'scheduled' && article.published_at ? $t('article_detail.scheduled_for') + ' ' + formatDateTimeForDisplay(article.published_at) : $t('article_detail.publish_date') + ': ' + formatDate(article.created_at) }}
+                  </span>
                 </div>
               </div>
               
@@ -127,7 +129,7 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { useArticleStore, useAuthStore } from '@/stores'
 import { commentApi } from '@/api'
-import { formatDate } from '@/utils'
+import { formatDate, formatDateTimeForDisplay } from '@/utils'
 import Navbar from '@/components/Navbar.vue'
 import CommentItem from '@/components/CommentItem.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'

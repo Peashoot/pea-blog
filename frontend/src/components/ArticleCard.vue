@@ -8,7 +8,9 @@
       <div class="article-meta">
         <span class="author">{{ article.author?.username }}</span>
         <span class="separator">·</span>
-        <span class="date">{{ formatDate(article.created_at) }}</span>
+        <span class="date">
+          {{ article.status === 'scheduled' && article.published_at ? $t('article_card.scheduled_for') + ' ' + formatDateTimeForDisplay(article.published_at) : formatDate(article.created_at) }}
+        </span>
         <div class="tags" v-if="article.tags.length">
           <span 
             v-for="tag in article.tags.slice(0, 3)" 
@@ -43,7 +45,7 @@
 
 <script setup lang="ts">
 import type { Article } from '@/types'
-import { formatDate } from '@/utils'
+import { formatDate, formatDateTimeForDisplay } from '@/utils'
 import { useI18n } from 'vue-i18n'
 
 defineProps<{

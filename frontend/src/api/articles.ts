@@ -6,6 +6,7 @@ import type {
   UpdateArticleRequest,
   SearchParams
 } from '@/types'
+import { parseDateTimeFromLocal, formatDateTimeForAPI } from '@/utils'
 
 export const articleApi = {
   getArticles: (params?: SearchParams): Promise<ArticleListResponse> => {
@@ -25,11 +26,35 @@ export const articleApi = {
   },
 
   createArticle: (data: CreateArticleRequest): Promise<Article> => {
-    return apiClient.post('/articles', data)
+    // 转换数据格式以匹配后端期望的格式
+    const requestData = { ...data }
+    
+    // 如果状态为 scheduled 且有 published_at，确保是有效的日期格式并包含时区
+    if (requestData.status === 'scheduled' && requestData.published_at) {
+      // 解析本地时间字符串并转换为带时区的ISO格式
+      const localDate = parseDateTimeFromLocal(requestData.published_at)
+      if (!isNaN(localDate.getTime())) {
+        requestData.published_at = formatDateTimeForAPI(localDate)
+      }
+    }
+    
+    return apiClient.post('/articles', requestData)
   },
 
   updateArticle: (data: UpdateArticleRequest): Promise<Article> => {
-    return apiClient.put(`/articles/${data.id}`, data)
+    // 转换数据格式以匹配后端期望的格式
+    const requestData = { ...data }
+    
+    // 如果状态为 scheduled 且有 published_at，确保是有效的日期格式并包含时区
+    if (requestData.status === 'scheduled' && requestData.published_at) {
+      // 解析本地时间字符串并转换为带时区的ISO格式
+      const localDate = parseDateTimeFromLocal(requestData.published_at)
+      if (!isNaN(localDate.getTime())) {
+        requestData.published_at = formatDateTimeForAPI(localDate)
+      }
+    }
+    
+    return apiClient.put(`/articles/${data.id}`, requestData)
   },
 
   deleteArticle: (id: number): Promise<void> => {

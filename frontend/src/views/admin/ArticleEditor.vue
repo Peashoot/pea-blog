@@ -108,6 +108,17 @@
             />
           </el-form-item>
 
+          <el-form-item v-if="form.status === 'scheduled' && form.publishedAt" :label="$t('article_editor.current_schedule_time')">
+            <div class="current-schedule-info">
+              <el-icon><Timer /></el-icon>
+              <span>{{ formatDateTimeForDisplay(form.publishedAt) }}</span>
+              <el-button type="primary" size="small" @click="handleReschedule">
+                <el-icon><Edit /></el-icon>
+                {{ $t('article_editor.reschedule') }}
+              </el-button>
+            </div>
+          </el-form-item>
+
           
           <el-form-item :label="$t('article_editor_page.content')" prop="content">
             <el-input
@@ -137,10 +148,10 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useArticleStore } from '@/stores'
 import { ElMessage, type FormInstance } from 'element-plus'
-import { Timer, Check, ArrowRight } from '@element-plus/icons-vue'
+import { Timer, Check, Edit } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { getDefaultScheduleTime, isValidScheduleTime, formatDateTimeForDisplay } from '@/utils'
 
-import { articleApi } from '@/api/articles';
 
 const { t } = useI18n()
 const route = useRoute()
@@ -164,10 +175,6 @@ const form = reactive({
 const scheduledTime = ref<string | null>(null)
 const isScheduling = ref(false)
 const showScheduleDialog = ref(false)
-const showPreview = ref(false)
-const isDragging = ref(false)
-const dragStartY = ref(0)
-const buttonStartTop = ref(0)
 
 const rules = {
   title: [
@@ -181,7 +188,7 @@ const rules = {
   content: [
     { required: true, message: t('article_editor_page.content_required'), trigger: 'blur' },
     { 
-      validator: (rule: any, value: string, callback: Function) => {
+      validator: (rule: any, value: string, callback: (error?: Error) => void) => {
         if (value && value.length > 100 * 1024 * 1024) {
           callback(new Error(t('article_editor_page.content_size_limit')))
         } else {
@@ -241,6 +248,16 @@ const handleSaveDraft = async () => {
   await saveDraft()
 }
 
+const handleReschedule = () => {
+  // Set the scheduled time to the current time by default
+  if (form.publishedAt) {
+    scheduledTime.value = form.publishedAt
+  } else {
+    scheduledTime.value = getDefaultScheduleTime()
+  }
+  showScheduleDialog.value = true
+}
+
 const handleSchedulePublish = async () => {
   if (!formRef.value) return
   
@@ -253,15 +270,13 @@ const handleSchedulePublish = async () => {
   
   // Set default scheduled time to 1 hour from now if not set
   if (!scheduledTime.value) {
-    const defaultTime = new Date()
-    defaultTime.setHours(defaultTime.getHours() + 1)
-    scheduledTime.value = defaultTime.toISOString().slice(0, 19).replace('T', ' ')
+    scheduledTime.value = getDefaultScheduleTime()
   }
   
   showScheduleDialog.value = true
 }
 
-const handleScheduleDialogClose = (done: Function) => {
+const handleScheduleDialogClose = (done: () => void) => {
   if (isScheduling.value) {
     return
   }
@@ -275,6 +290,11 @@ const onScheduledTimeChange = (value: string) => {
 
 const confirmSchedulePublish = async () => {
   if (!scheduledTime.value) {
+    ElMessage.error(t('article_editor_page.select_publish_time'))
+    return
+  }
+  
+  if (!isValidScheduleTime(scheduledTime.value)) {
     ElMessage.error(t('article_editor_page.select_publish_time'))
     return
   }
@@ -295,42 +315,6 @@ const confirmSchedulePublish = async () => {
   }
 }
 
-const togglePreview = () => {
-  showPreview.value = !showPreview.value
-}
-
-const startDrag = (e: MouseEvent) => {
-  isDragging.value = true
-  dragStartY.value = e.clientY
-  const button = e.currentTarget as HTMLElement
-  buttonStartTop.value = parseInt(button.style.top) || 32 // 2rem = 32px
-  document.addEventListener('mousemove', onDrag)
-  document.addEventListener('mouseup', stopDrag)
-  button.style.cursor = 'grabbing'
-}
-
-const onDrag = (e: MouseEvent) => {
-  if (!isDragging.value) return
-  
-  const deltaY = e.clientY - dragStartY.value
-  const newTop = Math.max(0, Math.min(window.innerHeight - 56, buttonStartTop.value + deltaY)) // 56px = 3.5rem
-  
-  const button = document.querySelector('.preview-toggle-btn') as HTMLElement
-  if (button) {
-    button.style.top = `${newTop}px`
-  }
-}
-
-const stopDrag = () => {
-  isDragging.value = false
-  document.removeEventListener('mousemove', onDrag)
-  document.removeEventListener('mouseup', stopDrag)
-  
-  const button = document.querySelector('.preview-toggle-btn') as HTMLElement
-  if (button) {
-    button.style.cursor = 'pointer'
-  }
-}
 
 const disabledPastDate = (time: Date) => {
   return time.getTime() < Date.now() - 8.64e7 // Disable past dates
@@ -358,7 +342,7 @@ const saveDraft = async () => {
       ElMessage.success(t('article_editor_page.draft_create_success'))
       router.push('/admin/articles')
     }
-  } catch (error) {
+  } catch {
     ElMessage.error(t('article_editor_page.save_fail'))
   } finally {
     isLoading.value = false
@@ -394,7 +378,7 @@ const publish = async () => {
     }
     
     router.push('/admin/articles')
-  } catch (error) {
+  } catch {
     ElMessage.error(t('article_editor_page.publish_fail'))
   } finally {
     isLoading.value = false
@@ -414,7 +398,7 @@ onMounted(async () => {
         status: article.status,
         publishedAt: article.published_at ? new Date(article.published_at).toISOString().slice(0, 19).replace('T', ' ') : null,
       })
-    } catch (error) {
+    } catch {
       ElMessage.error(t('article_editor_page.load_fail'))
       router.push('/admin/articles')
     }
@@ -607,6 +591,46 @@ onMounted(async () => {
   font-size: 0.9rem;
 }
 
+/* Fix date picker popup position */
+:deep(.el-date-editor) {
+  width: 100%;
+}
+
+:deep(.el-date-editor .el-input__wrapper) {
+  width: 100%;
+}
+
+:deep(.el-picker-panel) {
+  z-index: 3000 !important;
+}
+
+:deep(.el-date-picker__time-header) {
+  margin-top: 8px;
+}
+
+:deep(.el-date-picker .el-input__prefix) {
+  left: 12px;
+}
+
+:deep(.el-date-picker .el-input__suffix) {
+  right: 12px;
+}
+
+.current-schedule-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  color: #3b82f6;
+  font-size: 0.875rem;
+}
+
+.current-schedule-info .el-button {
+  margin-left: auto;
+}
 
 .dialog-footer {
   display: flex;

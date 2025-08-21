@@ -18,7 +18,7 @@ export const useArticleStore = defineStore('article', () => {
       isLoading.value = true
       const response: ArticleListResponse = await articleApi.getArticles({
         page: currentPage.value,
-        pageSize: pageSize.value,
+        page_size: pageSize.value,
         ...params
       })
       
@@ -44,7 +44,7 @@ export const useArticleStore = defineStore('article', () => {
       isLoading.value = true
       const response: ArticleListResponse = await articleApi.getPublishedArticles({
         page: currentPage.value,
-        pageSize: pageSize.value,
+        page_size: pageSize.value,
         ...params
       })
       
@@ -189,11 +189,11 @@ export const useArticleStore = defineStore('article', () => {
       const article = articles.value.find(a => a.id === id)
       if (article) {
         article.status = 'draft'
-        article.published_at = null
+        article.published_at = undefined
       }
       if (currentArticle.value?.id === id) {
         currentArticle.value.status = 'draft'
-        currentArticle.value.published_at = null
+        currentArticle.value.published_at = undefined
       }
     } catch (error) {
       console.error('Unpublish article error:', error)

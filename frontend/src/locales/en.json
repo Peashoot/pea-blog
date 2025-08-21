@@ -32,6 +32,7 @@
   "article_detail": {
     "author": "Author",
     "publish_date": "Publish Date",
+    "scheduled_for": "Scheduled for",
     "views": "Views",
     "likes": "Likes",
     "comments": "Comments",
@@ -79,6 +80,9 @@
     "preview": "Preview",
     "schedule_publish": "Schedule Publish",
     "cancel_schedule": "Cancel Schedule",
+    "reschedule": "Reschedule",
+    "confirm_reschedule": "Confirm Reschedule",
+    "current_schedule_time": "Current Schedule Time",
     "no_articles": "No articles yet",
     "create_first_article": "Create your first article",
     "published": "Published",
@@ -101,7 +105,9 @@
     "schedule_publish": "Schedule Publish",
     "select_publish_time": "Select publish time",
     "confirm_schedule": "Confirm Schedule",
-    "schedule_info": "Scheduled publish time"
+    "schedule_info": "Scheduled publish time",
+    "current_schedule_time": "Current Schedule Time",
+    "reschedule": "Reschedule"
   },
   "admin_layout": {
     "dashboard": "Dashboard",
@@ -113,7 +119,8 @@
   "article_card": {
     "views": "Views",
     "likes": "Likes",
-    "comments": "Comments"
+    "comments": "Comments",
+    "scheduled_for": "Scheduled for"
   },
   "time": {
     "just_now": "Just now",
@@ -163,6 +170,8 @@
     "cancel_schedule_confirm_text": "Are you sure you want to cancel the scheduled publishing?",
     "cancel_schedule_success": "Schedule cancelled successfully",
     "cancel_schedule_fail": "Failed to cancel schedule",
+    "reschedule_success": "Reschedule successful",
+    "reschedule_fail": "Failed to reschedule",
     "export_success": "Export successful",
     "export_fail": "Export failed",
     "import_success": "Import successful",

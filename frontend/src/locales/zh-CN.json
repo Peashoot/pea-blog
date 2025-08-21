@@ -32,6 +32,7 @@
   "article_detail": {
     "author": "作者",
     "publish_date": "发布日期",
+    "scheduled_for": "定时发布于",
     "views": "浏览",
     "likes": "点赞",
     "comments": "评论",
@@ -79,6 +80,9 @@
     "preview": "预览",
     "schedule_publish": "定时发布",
     "cancel_schedule": "取消定时",
+    "reschedule": "重新安排",
+    "confirm_reschedule": "确认重新安排",
+    "current_schedule_time": "当前定时时间",
     "no_articles": "暂无文章",
     "create_first_article": "创建第一篇文章",
     "published": "已发布",
@@ -101,7 +105,9 @@
     "schedule_publish": "定时发布",
     "select_publish_time": "选择发布时间",
     "confirm_schedule": "确认定时发布",
-    "schedule_info": "定时发布时间"
+    "schedule_info": "定时发布时间",
+    "current_schedule_time": "当前定时时间",
+    "reschedule": "重新安排"
   },
   "admin_layout": {
     "dashboard": "仪表盘",
@@ -113,7 +119,8 @@
   "article_card": {
     "views": "浏览",
     "likes": "点赞",
-    "comments": "评论"
+    "comments": "评论",
+    "scheduled_for": "定时发布于"
   },
   "time": {
     "just_now": "刚刚",
@@ -163,6 +170,8 @@
     "cancel_schedule_confirm_text": "确定要取消定时发布吗？",
     "cancel_schedule_success": "取消定时成功",
     "cancel_schedule_fail": "取消定时失败",
+    "reschedule_success": "重新安排成功",
+    "reschedule_fail": "重新安排失败",
     "export_success": "导出成功",
     "export_fail": "导出失败",
     "import_success": "导入成功",

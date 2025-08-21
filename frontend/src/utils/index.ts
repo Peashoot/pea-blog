@@ -47,7 +47,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): ((...args: Parameters<T>) => void) => {
-  let timeout: NodeJS.Timeout
+  let timeout: ReturnType<typeof setTimeout>
   return (...args: Parameters<T>) => {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
@@ -91,4 +91,74 @@ export const extractTags = (content: string): string[] => {
   const tagRegex = /#(\w+)/g
   const matches = content.match(tagRegex)
   return matches ? matches.map(tag => tag.slice(1)) : []
+}
+
+// 时区相关工具函数
+export const formatDateTimeForPicker = (date: Date): string => {
+  // 将本地时间转换为YYYY-MM-DD HH:mm:ss格式（用于时间选择器）
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
+export const formatDateTimeForAPI = (date: Date): string => {
+  // 将本地时间转换为带时区的ISO格式字符串（用于API请求）
+  return date.toISOString()
+}
+
+export const parseDateTimeFromLocal = (dateTimeString: string): Date => {
+  // 解析本地时间字符串并创建Date对象
+  // 格式：YYYY-MM-DD HH:mm:ss
+  const [datePart, timePart] = dateTimeString.split(' ')
+  const [year, month, day] = datePart.split('-').map(Number)
+  const [hours, minutes, seconds] = timePart.split(':').map(Number)
+  
+  // 创建Date对象（使用本地时间）
+  const date = new Date(year, month - 1, day, hours, minutes, seconds || 0)
+  
+  return date
+}
+
+export const formatDateTimeForDisplay = (dateString: string | null): string => {
+  if (!dateString) return ''
+  
+  // 解析时间字符串，假设是UTC时间
+  const date = new Date(dateString)
+  
+  if (isNaN(date.getTime())) {
+    return ''
+  }
+  
+  // 转换为本地时间字符串
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
+}
+
+export const getDefaultScheduleTime = (): string => {
+  // 返回1小时后的本地时间
+  const now = new Date()
+  now.setHours(now.getHours() + 1)
+  return formatDateTimeForPicker(now)
+}
+
+export const isValidScheduleTime = (timeString: string): boolean => {
+  if (!timeString) return false
+  
+  const selectedTime = new Date(timeString)
+  const now = new Date()
+  
+  // 选择的时间必须比当前时间晚1分钟
+  return selectedTime.getTime() > now.getTime() + 60000
 }
